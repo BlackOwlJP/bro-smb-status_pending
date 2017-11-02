@@ -1,0 +1,28 @@
+From b3d706b2606412fdf1fcba79e219f003b8fabc4a Mon Sep 17 00:00:00 2001
+From: BlackOwlJP <stefano@invisible.amee.com>
+Date: Tue, 31 Oct 2017 17:58:37 +0100
+Subject: [PATCH] SMBv2 STATUS_PENDING
+
+---
+ scripts/policy/protocols/smb/smb2-main.bro | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/scripts/policy/protocols/smb/smb2-main.bro b/scripts/policy/protocols/smb/smb2-main.bro
+index 1dc3a10..4a6fd8a 100644
+--- a/scripts/policy/protocols/smb/smb2-main.bro
++++ b/scripts/policy/protocols/smb/smb2-main.bro
+@@ -68,6 +68,11 @@ event smb2_message(c: connection, hdr: SMB2::Header, is_orig: bool) &priority=-5
+ 	# Is this a response?
+ 	if ( !is_orig )
+ 		{
++
++		local cur_cmd = c$smb_state$pending_cmds[hdr$message_id];
++                if ( cur_cmd$command == "CREATE" && c$smb_state$current_cmd$status == "PENDING" )
++                        return;
++
+ 		if ( SMB::write_cmd_log &&
+ 		     c$smb_state$current_cmd$status !in SMB::ignored_command_statuses &&
+ 		     c$smb_state$current_cmd$command !in SMB::deferred_logging_cmds )
+-- 
+2.7.4
+
